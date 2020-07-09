@@ -1,5 +1,5 @@
 ---
-title: Manage and Version Control Pipelines
+title: Custom Pipelines
 ---
 
 # Extend, Build & Deploy Kabanero Pipelines
@@ -9,14 +9,19 @@ in the out-of-the-box Kabanero pipelines. These tasks may include code coverage,
 to full-fill software requirements. Currently, there are not many methods to manage and version control your Kabanero 
 pipelines, and the goal of this repository is to help you get going.
 
-You will learn how to package, host your pipelines in different environments such as Git or Artifactory and use
+- You will learn how to add our custom pipelines to your dedicated cluster. In addition, not required
+you will also learn how to manage and version control your kabanero pipelines.
+
+- You will learn how to package, host your pipelines in different environments such as Git or Artifactory and use
 these pipelines to automate the process of updating the [Kabanero custom resource](https://kabanero.io/docs/ref/general/configuration/kabanero-cr-config.html) 
 to a respective host where your Kabanero pipelines exist.
+
 
 ## Table of Contents
   * [Extend, Build & Deploy Kabanero Pipelines](#extend-build--deploy-kabanero-pipelines)
   * [Overview](#overview)
   * [Pre-requisites](#pre-requisites)
+  * [How to add our custom pipelines to your cluster](#how-to-add-our-custom-pipelines-to-your-cluster)
   * [How to use artifactory-package-release-update pipeline](#how-to-use-artifactory-package-release-update-pipeline)
   * [How to use clone-storefront-ms-push-repos-to-org pipeline](#how-to-use-clone-storefront-ms-push-repos-to-org)
   * [How to use git-package-release-update pipeline](#how-to-use-git-package-release-update-pipeline)
@@ -24,21 +29,24 @@ to a respective host where your Kabanero pipelines exist.
   
 # Overview
 
-This repository includes 2 [directories](/pipelines), `experimental`(pipelines that are not production-ready and are considered, proof of concept), and `stable`(pipelines that are production ready). It also includes the following pipelines:
+We built our pipelines on top of out of box kabanero java-spring-boot2-build-deploy-pl for Spring boot and nodejs-express-build-deploy-pl for nodejs pipeline. Below are the additional tasks we have in our pipelines at the moment.
+
+- Testing: This task runs all the unit tests required for the application.
+- Sonar Scan: This task performs sonar scan which helps to detect the code smells, vulnerabilities, bugs etc in your application code.
+- Pact Contract Testing: This task performs contract testing. It shares consumer driven contracts and verifies the results using Pact.
+- Health checks: This task checks the rollout status of your deployment once it is deployed to the cluster and verifies the application health.
+- GitOps: This task will update the the deployment manifests residing in gitops-dev repository.
+
+This repository includes a set of custom [pipelines](https://github.com/ibm-garage-ref-storefront/devops-pipelines/tree/master/pipelines)
 
 | Stable  | Description  |
 |---|---|
 | artifactory-package-release-update  |  Compress custom pipelines, upload compressed pipelines to artifactory, and updates the Kabanero Custom Resource |
 | clone-storefront-ms-push-repos-to-org | Given a github org name, clone storefront microservices and deploy them to the github org   |
 | git-package-release-update | Compress custom pipelines, create a github release, upload compressed pipelines to the release, and update the Kabanero Custom Resource |
-| storefront-springboot |  This pipeline contains healthcheck, sonar-scan, pact-broker tasks for spring boot applications |
+| storefront-nodejs |  This custom pipeline is built on top of nodejs-build-deploy-pl (out of box kabanero pipeline for nodejs applications). It contains additional tasks such as test, sonar-scan, pact-broker, health checks, and gitops tasks |
+| storefront-springboot |  This custom pipeline is built on top of java-spring-boot2-build-deploy-pl (out of box kabanero pipeline for java spring boot applications). It contains additional tasks such as test, sonar-scan, pact-broker, health checks, and gitops tasks |
 
-| Incubator  | Description  |
-|---|---|
-| cloud-foundry  |  Deploys an application to cloud foundry given a specific namespace using CloudFoundry CLI  |
-| deploy-app-ibm-cloud  |  Deploys an application to cloud foundry  given a specific namespace using the IBM CLI |
-
- 
    
 # Pre-requisites
 Install the following CLI's on your laptop/workstation:
@@ -49,7 +57,83 @@ Install the following CLI's on your laptop/workstation:
   + [`Openshift 4.3.5 with CloudPak for Apps`](https://www.ibm.com/cloud/cloud-pak-for-applications)
   + [`tekton cli`](https://github.com/tektoncd/cli)
   + [`Kabanero 0.6.1`](https://github.com/kabanero-io)
+  + [Tools Kit created by the Catalyst Team](www.google.com)
     
+
+# How to add our custom pipelines to your cluster
+To add the custom pipelines we created as shown in the Overview section run the following steps.
+
+### Steps
+1. Login to your cluster and change to the kabanero namespace
+
+    ```bash
+    oc login --token=your-token --server=your-server
+    oc project kabanero
+    ```
+2. Download our latest release by visiting https://github.com/ibm-garage-ref-storefront/pipelines-server/releases 
+
+   Click on `default-kabanero-pipelines.tar.gz` file to download the zip file onto your Downloads.
+
+   Then run the following command to obtain the checksum value. You will use this checksum value later.
+   ```bash
+   > shasum -a 256 default-kabanero-pipelines.tar.gz
+     4c05cb2d593af43a3e4c6818ada1afc4e550e3c6bc08bbbf486eb2ab6ce37274  default-kabanero-pipelines.tar.gz
+   ```
+
+3. Edit your Kabanero Custom Resource and add our pipelines
+
+    ```bash
+    > oc edit kabanero -o yaml
+    ```
+4. Add the following: 
+   
+   ```yaml
+   stacks:
+     pipelines:
+     - https:
+         url: the-url-to-download-the-zip-file
+       id: pipeline-manager
+       sha256: the-checksum-value-you-generated
+   ```
+   For example we currently are on release v38.0 and our Kabanero custom resource looks like the following:
+   
+   ```yaml
+    stacks:
+      pipelines:
+      - https:
+          url: https://github.com/kabanero-io/kabanero-pipelines/releases/download/0.6.1/default-kabanero-pipelines.tar.gz
+        id: default
+        sha256: 64aee2805d36127c2f1e0e5f0fc6fdae5cef19360c1bb506137584f3bd0988cc
+      - https:
+          url: https://github.com/ibm-garage-ref-storefront/pipelines-server/releases/download/39.0/default-kabanero-pipelines.tar.gz
+        id: pipeline-manager
+        sha256: 4c05cb2d593af43a3e4c6818ada1afc4e550e3c6bc08bbbf486eb2ab6ce37274
+   ```
+5. Save your changes 
+   ```
+    esc
+    :wq
+   ```
+   You might get an error such as `Unable to save custom resource...` you just need to update the `resourceVersion` key with the latest time stamp.
+
+### Result 
+1. Verify the custom pipelines have been added to your cluster as shown below: 
+
+    ```bash
+    > tkn pipelines list
+        .
+        .
+        .
+        artifactory-package-release-update-pl      1 week ago    ---                                       ---           ---          ---
+        git-package-release-update-pl              1 week ago    git-package-release-update-pl-run-8fpcq   ---           ---          ---
+        clone-storefront-ms-push-repos-to-org-pl   1 week ago    ---                                       ---           ---          ---
+        storefront-nodejs-pl                       1 week ago    storefront-nodejs-pl-run-7gjbm            ---           ---          ---
+        storefront-springboot-pl                   1 week ago    storefront-springboot-pl-run-glsxs        ---           ---          ---
+        .
+        .
+        .
+    ```
+    *You are now ready to use our custom pipelines.*
 
 # How to use artifactory-package-release-update pipeline
 You can use this pipeline to package, release your pipelines onto Artifactory.
