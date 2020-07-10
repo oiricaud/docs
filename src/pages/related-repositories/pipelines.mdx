@@ -2,16 +2,6 @@
 title: Pipelines
 ---
 
-## Table of Contents
-  * [Extend, Build & Deploy Kabanero Pipelines](#extend-build--deploy-kabanero-pipelines)
-  * [Overview](#overview)
-  * [Pre-requisites](#pre-requisites)
-  * [How to add our custom pipelines to your cluster](#how-to-add-our-custom-pipelines-to-your-cluster)
-  * [How to use artifactory-package-release-update pipeline](#how-to-use-artifactory-package-release-update-pipeline)
-  * [How to use git-package-release-update pipeline](#how-to-use-git-package-release-update-pipeline)
-  * [Create tekton webhook](#create-a-tekton-webhook)
-
- 
 # Extend, Build & Deploy Kabanero Pipelines
 Developers that use [Kabanero](https://kabanero.io/) pipelines often times have to extend these pipelines to do certain tasks that do not come
 in the out-of-the-box Kabanero pipelines. These tasks may include code coverage, or use third party applications like
@@ -19,14 +9,19 @@ in the out-of-the-box Kabanero pipelines. These tasks may include code coverage,
 to full-fill software requirements. Currently, there are not many methods to manage and version control your Kabanero 
 pipelines, and the goal of this repository is to help you get going.
 
-- You will learn how to add our custom pipelines to your dedicated cluster. In addition, not required
-you will also learn how to manage and version control your kabanero pipelines.
-
-- You will learn how to package, host your pipelines in different environments such as Git or Artifactory and use
+You will learn how to package, host your pipelines in different environments such as Git or Artifactory and use
 these pipelines to automate the process of updating the [Kabanero custom resource](https://kabanero.io/docs/ref/general/configuration/kabanero-cr-config.html) 
 to a respective host where your Kabanero pipelines exist.
 
-
+## Table of Contents
+  * [Extend, Build & Deploy Kabanero Pipelines](#extend-build--deploy-kabanero-pipelines)
+  * [Overview](#overview)
+  * [Pre-requisites](#pre-requisites)
+  * [How to use artifactory-package-release-update pipeline](#how-to-use-artifactory-package-release-update-pipeline)
+  * [How to use clone-storefront-ms-push-repos-to-org pipeline](#how-to-use-clone-storefront-ms-push-repos-to-org)
+  * [How to use git-package-release-update pipeline](#how-to-use-git-package-release-update-pipeline)
+  * [Create tekton webhook](#create-a-tekton-webhook)
+  
 # Overview
 We built our pipelines on top of out of box kabanero java-spring-boot2-build-deploy-pl for Spring boot and nodejs-express-build-deploy-pl for nodejs pipeline. Below are the additional tasks we have in our pipelines at the moment.
 
@@ -41,8 +36,8 @@ We built our pipelines on top of out of box kabanero java-spring-boot2-build-dep
 - [Github Repo for pipelines](https://github.com/ibm-garage-ref-storefront/devops-pipelines)
 - [Github Repo for pipelines server](https://github.com/ibm-garage-ref-storefront/pipelines-server/)
 
-This repository includes a set of custom 
-[pipelines](https://github.com/ibm-garage-ref-storefront/devops-pipelines/tree/master/pipelines) 
+This repository includes a set of custom
+[pipelines](https://github.com/ibm-garage-ref-storefront/devops-pipelines/tree/master/pipelines)
 
 | Stable  | Description  |
 |---|---|
@@ -52,7 +47,7 @@ This repository includes a set of custom
 | [storefront-nodejs](https://github.com/ibm-garage-ref-storefront/devops-pipelines/tree/master/pipelines/stable/storefront-nodejs) |  This custom pipeline is built on top of nodejs-build-deploy-pl (out of box kabanero pipeline for nodejs applications). It contains additional tasks such as test, sonar-scan, pact-broker, health checks, and gitops tasks |
 | [storefront-springboot](https://github.com/ibm-garage-ref-storefront/devops-pipelines/tree/master/pipelines/stable/storefront-springboot) |  This custom pipeline is built on top of java-spring-boot2-build-deploy-pl (out of box kabanero pipeline for java spring boot applications). It contains additional tasks such as test, sonar-scan, pact-broker, health checks, and gitops tasks |
 
-   
+
 # Pre-requisites
 Install the following CLI's on your laptop/workstation:
 
@@ -63,10 +58,10 @@ Install the following CLI's on your laptop/workstation:
   + [`tekton cli`](https://github.com/tektoncd/cli)
   + [`Kabanero 0.6.1`](https://github.com/kabanero-io)
   + [Tools Kit created by the Catalyst Team](https://cloudnativetoolkit.dev/admin/overview)
-    
+
 
 # How to add our custom pipelines to your cluster
-You can add the custom pipelines to your cluster we created by following the steps below. 
+You can add the custom pipelines to your cluster we created by following the steps below.
 
 ### Steps
 1. Login to your cluster and change to the kabanero namespace
@@ -75,7 +70,7 @@ You can add the custom pipelines to your cluster we created by following the ste
     oc login --token=your-token --server=your-server
     oc project kabanero
     ```
-2. Download our latest release by visiting https://github.com/ibm-garage-ref-storefront/pipelines-server/releases 
+2. Download our latest release by visiting https://github.com/ibm-garage-ref-storefront/pipelines-server/releases
 
    Click on `default-kabanero-pipelines.tar.gz` file to download the zip file onto your Downloads.
 
@@ -90,8 +85,8 @@ You can add the custom pipelines to your cluster we created by following the ste
     ```bash
     > oc edit kabanero -o yaml
     ```
-4. Add the following: 
-   
+4. Add the following:
+
    ```yaml
    stacks:
      pipelines:
@@ -101,7 +96,7 @@ You can add the custom pipelines to your cluster we created by following the ste
        sha256: the-checksum-value-you-generated
    ```
    For example we currently are on release v38.0 and our Kabanero custom resource looks like the following:
-   
+
    ```yaml
     stacks:
       pipelines:
@@ -114,15 +109,15 @@ You can add the custom pipelines to your cluster we created by following the ste
         id: pipeline-manager
         sha256: 4c05cb2d593af43a3e4c6818ada1afc4e550e3c6bc08bbbf486eb2ab6ce37274
    ```
-5. Save your changes 
+5. Save your changes
    ```
     esc
     :wq
    ```
    You might get an error such as `Unable to save custom resource...` you just need to update the `resourceVersion` key with the latest time stamp.
 
-### Result 
-1. Verify the custom pipelines have been added to your cluster as shown below: 
+### Result
+1. Verify the custom pipelines have been added to your cluster as shown below:
 
     ```bash
     > tkn pipelines list
@@ -148,7 +143,7 @@ to create custom tasks or pipelines and need a solution to version control your 
 - Fork the [devops-pipelines](https://github.com/ibm-garage-ref-storefront/devops-pipelines) repository
 - Deploy [Artifactory](https://github.com/ibm-cloud-architecture/gse-devops/tree/master/cloudpak-for-integration-tekton-pipelines#artifactory) on your Openshift cluster
 
-- Generate an [API Key](https://www.jfrog.com/confluence/display/JFROG/User+Profile). 
+- Generate an [API Key](https://www.jfrog.com/confluence/display/JFROG/User+Profile).
 - Update Artifactory config map
 [artifactory-config.yaml](./pipelines/stable/artifactory-package-release-update/configmaps/artifactory-config.yaml) and update the `artifactory_key`. Once done, run the following
 commands:
@@ -182,11 +177,11 @@ You can use a pipeline to automate the process of extending, packaging and relea
 ### Pre-reqs
 - Fork this repository [devops-pipelines](https://github.com/ibm-garage-ref-storefront/devops-pipelines)
 
+
 ### Steps
 1. Add your custom pipelines or modify an existing one 
    If you inspect `./pipelines/` you can create a new folder for each new pipeline you have and follow a similar structure as below.
 
-      ```bash
       echo pwd
       ./devops-pipelines/pipelines
       ├── experimental
@@ -223,11 +218,9 @@ You can use a pipeline to automate the process of extending, packaging and relea
       │   │   └── template
       │   │       └── cde-pl-template.yaml
       │   └── manifest.yaml
-    ```
+
     
-<InlineNotification>
-Note: Pipelines in `experimental` do not get built.
-</InlineNotification>
+  **Pipelines in `expermental` do not get built.**
 
 2. Now drag and drop your pipelines and tasks to any of these folders, 
      
@@ -268,9 +261,9 @@ Note: Pipelines in `experimental` do not get built.
     oc adm policy add-cluster-role-to-user view system:serviceaccount:kabanero:kabanero-pipeline
     ```
     
-4. Create web hook for the [devops-pipelines](https://github.com/ibm-garage-ref-storefront/devops-pipelines) repository you created on step 1.
+4. Create web hook for the `devops-pipelines` repository you created on step 1.
 
-5. Deploy your pipeline, tasks, event bindings and trigger templates by running the following command in the [devops-pipelines](https://github.com/ibm-garage-ref-storefront/devops-pipelines) repo you created on step 1:
+5. Deploy your pipeline, tasks, event bindings and trigger templates by running the following command in the `devops-pipelines` repo you created on step 1:
 
     ```bash
     oc apply --recursive --filename pipelines/stable/git-package-release-update
@@ -279,11 +272,11 @@ Note: Pipelines in `experimental` do not get built.
     git push
     ```
 ### Result
-
 - Your output should be the following:
 ![Git Package Release Pipeline](../../images/git-package-release-update-pl-run.gif)
 
-- If you go to the [pipelines-server](https://github.com/ibm-garage-ref-storefront/pipelines-server/) repo you created on step 2, you should see a new release with your zip files as shown below:
+- If you go to the `devops-server` repo you created on step 2, you should see a new release with your zip files as shown below:
+![Pipeline Server Release](../../images/pipelines-server-release.gif)
 
 - Now inspect your Kabanero Custom Resource to ensure your `default-kabanero-pipelines.tar.gz` got added to the `pipelines` key value pair.
 
@@ -300,17 +293,17 @@ Note: Pipelines in `experimental` do not get built.
       sha256: 8fe10018016e5059640b1a790afe2d6a1ff6c4f54bf3e7e4fa3fc0f82bb2207d
   ```
 
-- The pipelines that you added to the [pipelines-server](https://github.com/ibm-garage-ref-storefront/pipelines-server/) repository should now be visible on the tekton dashboard as shown below:
+- The pipelines that you added to the `devops-pipelines` repository should now be visible on the tekton dashboard as shown below:
 ![](../../images/deploy-storefront-ms-to-openshift.png)
 ![](../../images/git-package-release-pl.png)  
 
 Now you can reuse these pipelines across your organization! If your cluster comes down you now have a backup of your pipelines.
 
-# Create a tekton webhook
+# Create a tekton webhook 
 ### Pre-reqs
 
 You need to create an access token on the tekton dashboard or cli in the kabanero namespace.
-Earlier you created a github token on the github dashboard. You will need to get that token or generate another one and
+Earlier you created a github token on the github dashboard. You will need to get that token or generate another one and 
 paste it below.
 ![Access Token](/../../images/access-token.gif)
 
@@ -328,3 +321,5 @@ paste it below.
     Service Account: Pipeline
     Docker Registry: us.icr.io/project-name or docker.hub.io/projectname
     ```
+
+[Pipelines Github Repo](https://github.com/ibm-garage-ref-storefront/devops-pipelines)
