@@ -7,7 +7,7 @@ title: Customized OpenShift Pipelines with IBM Garage Cloud Native Toolkit
 The sample OpenShift Pipelines that come out of the box with Cloud Pak for Applications (CP4Apps) is a good starting point to get started with DevOps.
 When you need more integrations into your pipelines you will need to create your own pipelines extending the CP4Apps,
 or if you just want to have more control over the promotion of the application thru different stages like test, staging, production using GitOps.
-The environment is configured with the [IBM Garage Cloud Native Toolkit](https://cloudnativetoolkit.dev/) with tools to suppor the custom pipelines.
+The environment is configured with the [IBM Garage Cloud Native Toolkit](https://cloudnativetoolkit.dev/) with tools to support the custom pipelines.
 
 ## Table of Contents
   * [Extend, Build & Deploy Kabanero Pipelines](#extend-build--deploy-kabanero-pipelines)
@@ -40,7 +40,7 @@ We built our pipelines on top of out of box kabanero java-spring-boot2-build-dep
 - Testing: This task runs all the unit tests required for the application.
 - Sonar Scan: This task performs sonar scan which helps to detect the code smells, vulnerabilities, bugs etc in your application code.
 - Pact Contract Testing: This task performs contract testing. It shares consumer driven contracts and verifies the results using Pact.
-- Health checks: This task checks the rollout status of your deployment once it is deployed to the cluster and verifies the application health.
+- Health checks: This task checks the roll out status of your deployment once it is deployed to the cluster and verifies the application health.
 - GitOps: This task will update the the deployment manifests residing in gitops-dev repository.
 
 
